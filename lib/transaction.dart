@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
 class MyTransaction extends StatelessWidget {
-  final String text;
+  final String transactionName;
   final String money;
   final String expenseOrIncome;
 
   MyTransaction({
+    required this.transactionName,
     required this.money,
-    required this.text,
     required this.expenseOrIncome,
   });
 
@@ -39,7 +39,7 @@ class MyTransaction extends StatelessWidget {
                   SizedBox(
                     width: 10,
                   ),
-                  Text(text,
+                  Text(transactionName,
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.grey[700],

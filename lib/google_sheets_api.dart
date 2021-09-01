@@ -5,10 +5,9 @@ class GoogleSheetsApi {
   static const _credentials = r'''
   {
    
-  PUT YOUR CREDENTIALS HERE
-
+   PUT YOUR CREDENTIALS HERE
+  
   }
-
   ''';
 
   // set up & connect to the spreadsheet
@@ -17,7 +16,7 @@ class GoogleSheetsApi {
   static Worksheet? _worksheet;
 
   // some variables to keep track of..
-  static int numberOfNotes = 0;
+  static int numberOfTransactions = 0;
   static List<List<dynamic>> currentTransactions = [];
   static bool loading = true;
 
@@ -30,36 +29,20 @@ class GoogleSheetsApi {
 
   // count the number of notes
   static Future countRows() async {
-    while (
-        (await _worksheet!.values.value(column: 1, row: numberOfNotes + 1)) !=
-            '') {
-      numberOfNotes++;
+    while ((await _worksheet!.values
+            .value(column: 1, row: numberOfTransactions + 1)) !=
+        '') {
+      numberOfTransactions++;
     }
     // now we know how many notes to load, now let's load them!
-    loadNotes();
-  }
-
-  // insert a new note
-  static Future insert(String name, String amount, bool _isIncome) async {
-    if (_worksheet == null) return;
-    numberOfNotes++;
-    currentTransactions.add([
-      name,
-      amount,
-      _isIncome == true ? 'income' : 'expense',
-    ]);
-    await _worksheet!.values.appendRow([
-      name,
-      amount,
-      _isIncome == true ? 'income' : 'expense',
-    ]);
+    loadTransactions();
   }
 
   // load existing notes from the spreadsheet
-  static Future loadNotes() async {
+  static Future loadTransactions() async {
     if (_worksheet == null) return;
 
-    for (int i = 1; i < numberOfNotes; i++) {
+    for (int i = 1; i < numberOfTransactions; i++) {
       final String transactionName =
           await _worksheet!.values.value(column: 1, row: i + 1);
       final String transactionAmount =
@@ -67,7 +50,7 @@ class GoogleSheetsApi {
       final String transactionType =
           await _worksheet!.values.value(column: 3, row: i + 1);
 
-      if (currentTransactions.length < numberOfNotes) {
+      if (currentTransactions.length < numberOfTransactions) {
         currentTransactions.add([
           transactionName,
           transactionAmount,
@@ -80,6 +63,23 @@ class GoogleSheetsApi {
     loading = false;
   }
 
+  // insert a new transaction
+  static Future insert(String name, String amount, bool _isIncome) async {
+    if (_worksheet == null) return;
+    numberOfTransactions++;
+    currentTransactions.add([
+      name,
+      amount,
+      _isIncome == true ? 'income' : 'expense',
+    ]);
+    await _worksheet!.values.appendRow([
+      name,
+      amount,
+      _isIncome == true ? 'income' : 'expense',
+    ]);
+  }
+
+  // CALCULATE THE TOTAL INCOME!
   static double calculateIncome() {
     double totalIncome = 0;
     for (int i = 0; i < currentTransactions.length; i++) {
@@ -90,6 +90,7 @@ class GoogleSheetsApi {
     return totalIncome;
   }
 
+  // CALCULATE THE TOTAL EXPENSE!
   static double calculateExpense() {
     double totalExpense = 0;
     for (int i = 0; i < currentTransactions.length; i++) {

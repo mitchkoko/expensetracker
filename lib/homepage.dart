@@ -1,11 +1,9 @@
 import 'dart:async';
-
-import 'package:expensetracker/google_sheets_api.dart';
-import 'package:expensetracker/plus_button.dart';
-import 'package:expensetracker/top_card.dart';
-import 'package:expensetracker/transaction.dart';
+import 'package:expensetracker_tutorial/google_sheets_api.dart';
+import 'package:expensetracker_tutorial/plus_button.dart';
+import 'package:expensetracker_tutorial/top_card.dart';
+import 'package:expensetracker_tutorial/transaction.dart';
 import 'package:flutter/material.dart';
-
 import 'loading_circle.dart';
 
 class HomePage extends StatefulWidget {
@@ -16,11 +14,13 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  bool _isIncome = false;
+  // collect user input
   final _textcontrollerAMOUNT = TextEditingController();
   final _textcontrollerITEM = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  bool _isIncome = false;
 
+  // enter the new transaction into the spreadsheet
   void _enterTransaction() {
     GoogleSheetsApi.insert(
       _textcontrollerITEM.text,
@@ -30,6 +30,7 @@ class _HomePageState extends State<HomePage> {
     setState(() {});
   }
 
+  // new transaction
   void _newTransaction() {
     showDialog(
         barrierDismissible: false,
@@ -151,65 +152,50 @@ class _HomePageState extends State<HomePage> {
       body: Padding(
         padding: const EdgeInsets.all(25.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Column(
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: TopNeuCard(
-                        balance: '\$' +
-                            (GoogleSheetsApi.calculateIncome() -
-                                    GoogleSheetsApi.calculateExpense())
-                                .toString(),
-                        income: GoogleSheetsApi.calculateIncome().toString(),
-                        expense: GoogleSheetsApi.calculateExpense().toString(),
-                        function: () {},
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  height: 40,
-                ),
-                Row(
-                  children: [
-                    Text('T R A N S A C T I O N S',
-                        style:
-                            TextStyle(color: Colors.grey[500], fontSize: 22)),
-                  ],
-                ),
-                SizedBox(
-                  height: 10,
-                ),
-              ],
+            SizedBox(
+              height: 30,
+            ),
+            TopNeuCard(
+              balance: (GoogleSheetsApi.calculateIncome() -
+                      GoogleSheetsApi.calculateExpense())
+                  .toString(),
+              income: GoogleSheetsApi.calculateIncome().toString(),
+              expense: GoogleSheetsApi.calculateExpense().toString(),
             ),
             Expanded(
-              child: GoogleSheetsApi.loading == true
-                  ? LoadingCircle()
-                  : ListView.builder(
-                      itemCount: GoogleSheetsApi.currentTransactions.length,
-                      itemBuilder: (context, index) {
-                        return MyTransaction(
-                          text: GoogleSheetsApi.currentTransactions[index][0],
-                          money: GoogleSheetsApi.currentTransactions[index][1],
-                          expenseOrIncome:
-                              GoogleSheetsApi.currentTransactions[index][2],
-                        );
-                      },
-                    ),
-            ),
-            SizedBox(
-              height: 10,
+              child: Container(
+                child: Center(
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        height: 20,
+                      ),
+                      Expanded(
+                        child: GoogleSheetsApi.loading == true
+                            ? LoadingCircle()
+                            : ListView.builder(
+                                itemCount:
+                                    GoogleSheetsApi.currentTransactions.length,
+                                itemBuilder: (context, index) {
+                                  return MyTransaction(
+                                    transactionName: GoogleSheetsApi
+                                        .currentTransactions[index][0],
+                                    money: GoogleSheetsApi
+                                        .currentTransactions[index][1],
+                                    expenseOrIncome: GoogleSheetsApi
+                                        .currentTransactions[index][2],
+                                  );
+                                }),
+                      )
+                    ],
+                  ),
+                ),
+              ),
             ),
             PlusButton(
-              child: Text(
-                '+',
-                style: TextStyle(color: Colors.white, fontSize: 50),
-              ),
               function: _newTransaction,
-            )
+            ),
           ],
         ),
       ),
